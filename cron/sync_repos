@@ -1,0 +1,3 @@
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+10 */2 * * * root /data/sync_repos.sh
+1 * * * * root /usr/bin/python3 /data/get_publishers.py |tee /data/publisher.txt
