@@ -1,32 +1,33 @@
 #!/bin/bash
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-run_nums=$(ps -ef|grep sync_repos.sh|grep -v grep|wc -l)
+run_nums=$(ps -ef|grep sync_recent.sh|grep -v grep|wc -l)
 if [ "$run_nums" -gt "2" ];then
   echo "prev task not done"
   exit 0
 fi
+
 ip="192.168.1.172:41000"
 export http_proxy=$ip
 export https_proxy=$ip
 cd /data
-while read line
+recentapps=$(python3 /data/get_recentapps.py)
+for line in ${recentapps}
+  #olf/personal/main/m
   do
    repos="https://sailfish.openrepos.net/${line}/"
+   user=$(echo $line|awk -F '/' '{print $1}')
    wget --header="Referer: https://sailfish.openrepos.net/${line}/personal/main/" \
     --header="User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36" \
     -np \
-    -nc \
     -R "index.html*, *.xml, *.xml.gz, *.xml.asc, *.sqlite.bz2" \
     -c -r -L -p ${repos}
    if [ -d "sailfish.openrepos.net/${line}" ];then
        find . -name index.html -delete
-       find ./sailfish.openrepos.net/${line}/ -name repomd.xml.asc -delete
-       sed -i 's/sailfish.openrepos.net/openrepos.qiyuos.cn/' $(grep -rl "sailfish.openrepos.net" sailfish.openrepos.net/${line})
-       sed -i 's/openrepos-/openrepos.cn-/' sailfish.openrepos.net/${line}/personal-main.repo
-       createrepo -update sailfish.openrepos.net/${line}/personal/main/
-       echo '$passphrase' |gpg --passphrase-fd 0 --trust-model always --detach-sign --armor sailfish.openrepos.net/${line}/personal/main/repodata/repomd.xml
+       sed -i 's/openrepos-/openrepos.cn-/' sailfish.openrepos.net/${user}/personal-main.repo
+       createrepo -update sailfish.openrepos.net/${user}/personal/main/
+       echo '$passphrase' |gpg --passphrase-fd 0 --trust-model always --detach-sign --armor sailfish.openrepos.net/${user}/personal/main/repodata/repomd.xml
        echo "signed with gpg"
        echo "Sync done: " ${line}
    fi
    sleep 10
-done < publisher.txt
+done
