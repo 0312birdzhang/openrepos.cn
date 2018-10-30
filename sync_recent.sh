@@ -11,6 +11,7 @@ export http_proxy=$ip
 export https_proxy=$ip
 cd /data
 recentapps=$(python3 /data/get_recentapps.py)
+recentapps="$recentapps" $(python3 /data/get_recentlibs.py)
 for line in ${recentapps}
   #olf/personal/main/m
   do
