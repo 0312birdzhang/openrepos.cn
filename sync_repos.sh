@@ -24,7 +24,7 @@ while read line
        sed -i 's/sailfish.openrepos.net/openrepos.qiyuos.cn/' $(grep -rl "sailfish.openrepos.net" sailfish.openrepos.net/${line})
        sed -i 's/openrepos-/openrepos.cn-/' sailfish.openrepos.net/${line}/personal-main.repo
        createrepo -update sailfish.openrepos.net/${line}/personal/main/
-       echo '$passphrase' |gpg --passphrase-fd 0 --trust-model always --detach-sign --armor sailfish.openrepos.net/${line}/personal/main/repodata/repomd.xml
+       gpg --detach-sign --armor sailfish.openrepos.net/${line}/personal/main/repodata/repomd.xml
        echo "signed with gpg"
        echo "Sync done: " ${line}
    fi
