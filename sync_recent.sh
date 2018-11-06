@@ -13,22 +13,26 @@ cd /data
 recentapps=$(python3 /data/get_recentapps.py)
 recentapps="$recentapps" $(python3 /data/get_recentlibs.py)
 for line in ${recentapps}
+do
+  if [ "$line" = "" ];then
+   continue
+  fi
   #olf/personal/main/m
-  do
    repos="https://sailfish.openrepos.net/${line}/"
    user=$(echo $line|awk -F '/' '{print $1}')
    wget --header="Referer: https://sailfish.openrepos.net/${line}/personal/main/" \
     --header="User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36" \
     -np \
+    -nc \
     -R "index.html*, *.xml, *.xml.gz, *.xml.asc, *.sqlite.bz2" \
     -c -r -L -p ${repos}
    if [ -d "sailfish.openrepos.net/${line}" ];then
-       find . -name index.html -delete
        sed -i 's/openrepos-/openrepos.cn-/' sailfish.openrepos.net/${user}/personal-main.repo
        createrepo -update sailfish.openrepos.net/${user}/personal/main/
-       echo '$passphrase' |gpg --passphrase-fd 0 --trust-model always --detach-sign --armor sailfish.openrepos.net/${user}/personal/main/repodata/repomd.xml
+       rm -f sailfish.openrepos.net/${user}/personal/main/repodata/repomd.xml.asc
+       gpg --detach-sign --armor sailfish.openrepos.net/${user}/personal/main/repodata/repomd.xml
        echo "signed with gpg"
        echo "Sync done: " ${line}
    fi
-   sleep 10
+   sleep 1
 done
